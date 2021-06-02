@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
 
+#define THREADS 4
 void doPuzzle(char **, int nRows, int nCols);
 
 
@@ -21,6 +23,7 @@ int main()
         matrix[i] = (char *) malloc(nCols * sizeof(char *));
     }
 
+    omp_set_num_threads(THREADS);
     char letter;
     // Get input from user
     for (i =0; i<nRows; ++i)
@@ -56,7 +59,7 @@ int main()
     // Solve the puzzle
     doPuzzle(matrix, nRows, nCols);
 
-    printf("============= Final Output =============\n");
+    printf("\n============= Final Output =============\n");
     for (i =0; i<nRows; ++i)
     {
         for (j=0; j<nCols; ++j)
@@ -77,17 +80,21 @@ int main()
 void doPuzzle(char **matrix, int nRows, int nCols) {
     char letter = 'O';
     int i,j;
-    for(i=0; i<nRows; ++i)
+#pragma omp parallel shared(matrix) private(i,j)
     {
-        for (j=0; j<nCols-1; ++j)
+        for(i=0; i<nRows; ++i)
         {
-            if (matrix[i][j+1] == letter && j < nCols - 2)
+            for (j=0; j<nCols-1; ++j)
             {
-                if (matrix[i][j] == 'X' && matrix[i][j+2] == 'X')
+                if (matrix[i][j+1] == letter && j < nCols - 2)
                 {
-                    matrix[i][j+1] = 'X';
+                    if (matrix[i][j] == 'X' && matrix[i][j+2] == 'X')
+                    {
+                        matrix[i][j+1] = 'X';
+                        printf("\n==>Change occurred on Row %d Col %d\n", i+1, j+2);
+                    } else continue;
                 } else continue;
-            } else continue;
+            }
         }
     }
 }
