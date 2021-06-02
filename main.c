@@ -73,6 +73,7 @@ int main()
     return 0;
 }
 
+// Replace 'O' if possible depending on some conditions
 void doPuzzle(char **matrix, int nRows, int nCols) {
     char letter = 'O';
     int i,j;
